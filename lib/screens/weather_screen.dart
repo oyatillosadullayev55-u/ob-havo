@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -76,8 +77,10 @@ class _WeatherScreenState extends State<WeatherScreen>
       LocationFailure.serviceDisabled => s.locationDisabled,
       LocationFailure.timeout || LocationFailure.unknown => s.locationFailed,
     };
-    final canOpenSettings = issue == LocationFailure.deniedForever ||
-        issue == LocationFailure.serviceDisabled;
+    // Brauzerda sozlamalarni dasturdan ochib bo‘lmaydi, shuning uchun tugma faqat ilovada
+    final canOpenSettings = !kIsWeb &&
+        (issue == LocationFailure.deniedForever ||
+            issue == LocationFailure.serviceDisabled);
 
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()

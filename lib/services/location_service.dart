@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:geolocator/geolocator.dart';
 
 enum LocationFailure { serviceDisabled, denied, deniedForever, timeout, unknown }
@@ -14,6 +15,7 @@ class LocationException implements Exception {
 }
 
 /// GPS orqali joylashuvni aniqlaydi (ruxsat so‘raydi).
+/// Android, iOS va brauzerda ishlaydi.
 class LocationService {
   Future<Position> currentPosition() async {
     try {
@@ -41,8 +43,11 @@ class LocationService {
           ),
         );
       } on TimeoutException {
-        final last = await Geolocator.getLastKnownPosition();
-        if (last != null) return last;
+        // Brauzerda "oxirgi ma’lum joylashuv" tushunchasi yo‘q
+        if (!kIsWeb) {
+          final last = await Geolocator.getLastKnownPosition();
+          if (last != null) return last;
+        }
         throw const LocationException(LocationFailure.timeout);
       }
     } on LocationException {
@@ -53,6 +58,8 @@ class LocationService {
   }
 
   Future<void> openSettings(LocationFailure failure) async {
+    // Brauzerda sozlamalarni dasturdan ochib bo‘lmaydi
+    if (kIsWeb) return;
     if (failure == LocationFailure.serviceDisabled) {
       await Geolocator.openLocationSettings();
     } else {
